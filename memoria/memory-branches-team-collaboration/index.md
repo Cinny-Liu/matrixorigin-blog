@@ -1,115 +1,115 @@
 ---
-title: "Memoria 分支与空间协作正式上线：让团队的 Agent 记忆像代码一样协作"
+title: "Memoria Memory Branches and Collaborative Spaces Are Live: Bring Code-Style Collaboration to Agent Memory"
 date: "2026-05-11"
 tag: "Feature"
 status: "published"
-description: "每个协作者都可以在自己的分支里沉淀经验，经过判断后再合并回主分支。团队共同维护的 Agent 记忆，从此有了更清晰的协作方式。"
+description: "Each collaborator can develop memory in their own branch, then merge what matters back into main. Team-maintained agent memory now has a clearer way to evolve."
 ---
 
-# Memoria 分支与空间协作正式上线：让团队的 Agent 记忆像代码一样协作
+# Memoria Memory Branches and Collaborative Spaces Are Live: Bring Code-Style Collaboration to Agent Memory
 
-Memoria 的记忆分支与空间协作功能现已正式上线。
+Memoria memory branches and collaborative spaces are now live.
 
-从现在开始，团队可以像协作代码一样协作 Agent 记忆：每个成员在自己的分支里沉淀经验，确认有价值后，再合并回团队共同维护的主分支。
+From now on, teams can collaborate on agent memory the same way they collaborate on code: each member works in their own branch, captures useful context, and merges validated knowledge back into the shared main branch.
 
-空间协作是 Memoria 专业版能力之一，目前专业版限时免费开放体验。相比免费版，专业版提供更多记忆容量、分支、快照、记忆空间和检索次数，更适合团队持续沉淀和共享 Agent 记忆。
+Collaborative spaces are part of the Memoria Pro plan, which is currently available for free for a limited time. Compared with the Free plan, Pro provides more memory capacity, branches, snapshots, memory spaces, and retrievals, making it better suited for teams that need to continuously build and share agent memory.
 
 ![](./images/image1.png)
 
 ---
 
-软件团队花了几十年，才把「代码协作」这件事做对。
+Software teams spent decades learning how to collaborate on code well.
 
-早期的协作方式很直接：共享文件夹、邮件传代码，或者靠一句「你先别动这个文件，我在改」。后来有了版本控制，有了分支，有了 PR 流程。不是因为工程师喜欢把事情变复杂，而是因为多人维护同一个东西时，必须有机制管理改动、判断价值，并决定什么时候应该合进去。
+Early collaboration was simple, but fragile: shared folders, code sent over email, or someone saying, "Don't touch this file yet, I'm editing it." Eventually we got version control, branches, and pull requests. Not because engineers wanted more ceremony, but because when multiple people maintain the same thing, they need a mechanism for managing changes, evaluating value, and deciding what should be merged.
 
-现在，越来越多团队开始把 Agent 放进日常工作流。Agent 背后也有一套持续积累的记忆：项目约定、历史决策、踩过的坑、某个模块为什么不能那样改。这些内容不是一次性配置，而是团队知识的长期沉淀。
+Now, more teams are bringing agents into their daily workflows. Behind every agent is a growing layer of memory: project conventions, historical decisions, hard-earned lessons, and reasons why a certain module should not be changed in a certain way. This is not a one-time configuration. It is the long-term accumulation of team knowledge.
 
-但过去，我们管理 Agent 记忆的方式，仍然更像早期的共享文件夹。
-
----
-
-## 记忆孤岛让知识无法流动
-
-一个在项目里待了一年的工程师，他的 Agent 里往往有很多真正有价值的上下文。不只是文档里能写清楚的接口说明，还有那些更细的判断：这个方案上次为什么没走通，那个模块有哪些历史包袱，某个需求背后的真实意图是什么。
-
-这些内容很多时候不是正式文档，而是工程师和 Agent 长期配合后形成的工作记忆。问题在于，它只存在于一个人的空间里。
-
-新人加入时，这套经验对他不可见。他的 Agent 只能从零开始，重新踩坑，重新积累。老人离开时，带走的也不只是个人经验，还有那套没有进入团队共同记忆的上下文。
-
-这就是记忆孤岛的问题。每个人都在积累，但积累没有流动起来；每个 Agent 都在变聪明，但团队共同记忆没有因此变得更完整。
+But until now, the way we managed agent memory still looked a lot like the early days of shared folders.
 
 ---
 
-## 共识是需要被维护的
+## Memory Silos Keep Knowledge From Moving
 
-把记忆共享出来，是第一步。但共享不等于协作。
+An engineer who has worked on a project for a year often has extremely valuable context in their agent. Not just API details that could be written in documentation, but finer-grained judgment: why a previous approach failed, what historical baggage a module carries, or what a requirement was really trying to solve.
 
-如果所有人都直接修改同一套记忆，新的问题很快会出现：哪些内容已经被验证，哪些只是临时想法，哪些是某个人正在测试的方案？当所有内容都混在一起时，团队很难判断这套记忆到底代表什么。
+Much of this is not formal documentation. It is working memory formed over time between the engineer and their agent. The problem is that it often exists in only one person's space.
 
-这和代码协作很像。主分支不应该是每个人随手提交的集合，而应该是团队当前认可的状态。Agent 记忆也是一样。它不仅要能被共享，还要能被维护。
+When a new teammate joins, that experience is invisible to them. Their agent starts from zero, repeats the same mistakes, and rebuilds the same context. When someone leaves, they take more than personal experience with them. They also take the project context that never made it into shared team memory.
 
-真正重要的不是「有没有一份共同记忆」，而是「这份共同记忆是否值得被团队信任」。
-
----
-
-## 分支是在保护共识
-
-Memoria 的分支机制，就是为了解决这个问题。
-
-每个人都可以从主分支拉出自己的工作分支。在自己的分支里补充上下文、整理经验、测试新的记忆组织方式，不会影响主分支，也不会打扰其他协作者。
-
-当一段记忆被证明有价值，就可以提交合并，并写清楚合并理由。这一步很关键。它不是单纯把内容搬过去，而是在表达一个判断：这条记忆值得成为团队共同上下文的一部分。
-
-换句话说，不是所有记忆都应该进入 `main`。只有被验证、可复用、可解释的记忆，才应该成为团队共同维护的主分支记忆。
-
-主分支因此不再是所有实验过程的叠加，而是团队反复筛选后留下来的共识。它会持续增长，但不是无序堆积；它会越来越完整，也会保持可追踪、可回滚、可解释。
+That is the problem with memory silos. Everyone is accumulating knowledge, but that knowledge does not flow. Each agent becomes smarter, but the team's shared memory does not become more complete.
 
 ---
 
-## 如何开始空间协作
+## Consensus Has to Be Maintained
 
-实际使用时，整个流程可以概括为五步：创建协作空间、邀请成员、从 `main` 拉出分支、对比并合并、必要时从历史记录回滚。
+Sharing memory is the first step. But sharing is not the same as collaboration.
 
-你可以先在账号下创建一个协作空间。
+If everyone directly edits the same memory state, new problems appear quickly. Which entries have been validated? Which are temporary ideas? Which are part of someone's experiment? When everything is mixed together, it becomes hard for the team to understand what this memory actually represents.
+
+This is very similar to code collaboration. The main branch should not be a pile of everyone's ad hoc changes. It should represent the state the team currently trusts. Agent memory is no different. It needs to be shared, but it also needs to be maintained.
+
+What matters is not merely whether a shared memory exists. What matters is whether that shared memory can be trusted by the team.
+
+---
+
+## Branches Protect Consensus
+
+Memoria's branching model is designed for exactly this problem.
+
+Each collaborator can create a working branch from the main branch. In that branch, they can add context, organize experience, or test a new way of structuring memory without affecting main or interrupting other collaborators.
+
+When a piece of memory proves valuable, it can be submitted for merge with a clear reason. This step matters. It is not just moving content from one place to another. It is a judgment that this memory deserves to become part of the team's shared context.
+
+In other words, not every memory should enter `main`. Only memory that has been validated, can be reused, and can be explained should become part of the team-maintained main branch.
+
+As a result, the main branch is no longer an accumulation of every experiment. It becomes the consensus that remains after repeated team review. It continues to grow, but not as an unordered pile. It becomes more complete while remaining traceable, reversible, and understandable.
+
+---
+
+## How to Start Collaborating in a Space
+
+In practice, the workflow has five basic steps: create a collaborative space, invite collaborators, create a branch from `main`, compare and merge, and roll back from history when needed.
+
+Start by creating a collaborative space under your account.
 
 ![](./images/image3.png)
 
 ![](./images/image4.png)
 
-然后切换到协作空间，复制邀请链接发送给协作者，把需要共同维护 Agent 记忆的人邀请进来。这个空间里的 `main` 分支，就是大家当前共同信任的记忆状态。
+Then switch into the collaborative space, copy the invitation link, and send it to the collaborators who should help maintain the agent memory. The `main` branch in this space represents the memory state everyone currently trusts.
 
 ![](./images/image5.png)
 
 ![](./images/image6.png)
 
-协作者加入空间后，可以从 `main` 拉出自己的工作分支。在这个分支里，他可以补充项目背景、整理经验，或者先测试一套新的记忆组织方式。这些改动只发生在自己的分支里，不会直接影响主分支。
+After joining the space, a collaborator can create their own working branch from `main`. In that branch, they can add project background, organize experience, or test a new memory structure. These changes stay in their own branch and do not directly affect the main branch.
 
 ![](./images/image7.png)
 
-当这部分记忆已经足够清晰，就可以点击 **Compare & Merge**，对比自己的分支和 `main` 的差异，并把有价值的内容合并回主分支。
+Once the memory is clear enough, they can click **Compare & Merge** to compare their branch with `main` and merge valuable content back into the main branch.
 
 ![](./images/image8.png)
 
-合并之后，这段经验就会进入协作空间的共同记忆，供所有成员复用。
+After the merge, that experience becomes part of the shared memory in the collaborative space, available for everyone to reuse.
 
-合并也不是不可逆的。如果后续发现某次合并不合适，可以通过 **History** 查看历史记录，找到需要恢复的记忆状态；需要回退时，再用 **Rollback** 回到那个更可靠的版本。
+Merges are not irreversible. If a merge later turns out to be unsuitable, you can use **History** to inspect previous memory states and identify the version you want to restore. When needed, **Rollback** brings the memory back to that more reliable version.
 
 ![](./images/image9.png)
 
-从创建协作空间到合并、回滚，所有操作都围绕同一套 `main` 记忆展开。协作者可以放心在自己的分支里整理和验证内容，只有确认有价值的部分，才会进入共同维护的主分支。
+From creating a collaborative space to merging and rolling back, every operation revolves around the same `main` memory. Collaborators can safely organize and validate content in their own branches, and only the parts that prove valuable enter the jointly maintained main branch.
 
 ---
 
-## 空间协作让团队记忆真正共享
+## Collaborative Spaces Make Team Memory Truly Shared
 
-分支解决的是「如何维护共识」，空间协作解决的是「谁可以一起维护」。
+Branches answer the question of how consensus is maintained. Collaborative spaces answer the question of who can maintain it together.
 
-在协作空间里，所有协作者都可以围绕同一套主分支记忆工作。有人补充部署经验，有人整理模块背景，有人把最近踩过的坑合并进来。下一个遇到类似问题的人，不需要重新问一遍，也不需要等某个熟悉项目的人刚好在线，Agent 已经能从团队共同记忆里获得上下文。
+In a collaborative space, all collaborators work around the same main-branch memory. One person may add deployment experience, another may organize module background, and someone else may merge lessons from a recent issue. The next person who encounters a similar problem does not need to ask again or wait for the right teammate to be online. Their agent can already retrieve context from the team's shared memory.
 
-更重要的是，这种积累是连续的。每一次有价值的合并，都会让团队记忆变得更可靠。参与协作的人越多、项目越久，这套共同维护的记忆和每个人各自积累相比，差距会越来越明显。
+More importantly, this accumulation is continuous. Every valuable merge makes the team's memory more reliable. The more people collaborate, and the longer the project runs, the more significant the difference becomes between jointly maintained memory and isolated personal accumulation.
 
-出了问题，也能回到历史记录里查看不同阶段的记忆状态。找到更可靠的版本，回滚，继续迭代。团队记忆不再是只能一路向前累积的黑箱，而是一套可以调整、可以恢复的协作资产。
+When something goes wrong, you can return to history and inspect memory states from different points in time. Find a more reliable version, roll back, and keep iterating. Team memory is no longer a black box that only moves forward. It becomes a collaborative asset that can be adjusted and restored.
 
-软件团队花了几十年把代码协作做对。Agent 记忆的协作，不需要再从共享文件夹时代重新走一遍。
+Software teams spent decades learning how to collaborate on code. Agent memory does not need to repeat the shared-folder era.
 
-通过分支与空间协作，团队可以把个人经验沉淀为共同资产，让 Agent 记忆真正进入团队的长期积累。
+With branches and collaborative spaces, teams can turn individual experience into a shared asset and make agent memory part of their long-term knowledge accumulation.
