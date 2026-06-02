@@ -41,14 +41,14 @@
 
   <!-- branch label -->
   <text x="600" y="170" text-anchor="middle" class="h" font-size="19" font-weight="600" fill="#BC8CFF">多元宇宙 · 开一条平行分支</text>
-  <text x="600" y="194" text-anchor="middle" class="mono m" font-size="14">CREATE TABLE … FROM SNAPSHOT</text>
+  <text x="600" y="194" text-anchor="middle" class="mono m" font-size="14">DATA BRANCH CREATE TABLE … FROM …{snapshot="…"}</text>
 
   <!-- merge label -->
   <text x="900" y="300" text-anchor="middle" class="h" font-size="19" font-weight="600" fill="#3FB950">协作画布 · 合并回主线</text>
-  <text x="900" y="324" text-anchor="middle" class="mono m" font-size="14">SNAPSHOT MERGE … WHEN CONFLICT</text>
+  <text x="900" y="324" text-anchor="middle" class="mono m" font-size="14">DATA BRANCH MERGE … INTO … WHEN CONFLICT FAIL</text>
 
   <!-- restore arrow -->
   <path d="M1030 376 C 1000 500, 640 520, 522 374" stroke="#3FB950" stroke-width="2.5" fill="none" stroke-dasharray="6 5" marker-end="url(#arrG)"/>
   <text x="770" y="506" text-anchor="middle" class="h" font-size="19" font-weight="600" fill="#3FB950">任意门 · 回到过去的任意一刻</text>
-  <text x="770" y="530" text-anchor="middle" class="mono m" font-size="14">RESTORE TABLE … FROM SNAPSHOT</text>
+  <text x="770" y="530" text-anchor="middle" class="mono m" font-size="14">RESTORE TABLE …{snapshot="…"}</text>
 </svg>

@@ -57,10 +57,12 @@ Fill that gap, and data gets the three things code got twenty years ago. **A tim
 None of these actions is new. What's new is that they can now happen inside a database that holds up in production, **over massive data, at near-zero cost.** MatrixOne turns them into ordinary SQL:
 
 ```sql
-CREATE SNAPSHOT before_update FOR TABLE users;   -- save a checkpoint, like git commit
-UPDATE users SET status = 'inactive';            -- oops, forgot the WHERE
-RESTORE TABLE users FROM SNAPSHOT before_update; -- go back, like git reset --hard
+CREATE SNAPSHOT before_update FOR TABLE db1 users;   -- save a checkpoint, like git commit
+UPDATE users SET status = 'inactive';                -- oops, forgot the WHERE
+RESTORE TABLE db1.users{snapshot="before_update"};   -- go back, like git reset --hard
 ```
+
+> The SQL syntax in this article follows **MatrixOne 4.0**.
 
 The reason it's cheap enough that you'll actually reach for it is the very same trick Git uses: a branch doesn't copy the data, it just records a pointer to the existing data. So cloning a **600-million-row** table takes **0.2 seconds and 314 KB of extra storage**. That isn't clever optimization — it simply never moved the data, which is why the cost is independent of how big the data is.
 
