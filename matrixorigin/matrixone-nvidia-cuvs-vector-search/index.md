@@ -1,60 +1,60 @@
 ---
-title: "In-Database Vector Index on GPU: How MatrixOne Uses NVIDIA cuVS for Large-Scale Vector Data"
+title: '向量索引入核，驾驭亿级向量数据：MatrixOne × NVIDIA cuVS GPU 加速实践'
 author: MatrixOrigin
-description: MatrixOne integrates NVIDIA cuVS and RAFT directly into the database engine, enabling GPU-accelerated vector indexing and retrieval at enterprise scale. This article explains the architecture, implementation details, and benchmark results across datasets up to 88 million vectors, demonstrating significant gains in indexing speed, query throughput, and memory efficiency.
-tags:
-  - Technical Insights
-
-keywords:
-  - MatrixOne
-  - NVIDIA cuVS
-  - GPU Acceleration
-  - Vector Database
-
-publishTime: "2026-06-02 18:00:00+08:00"
-date: '2026-06-02'
-
+description: MatrixOne 深度集成 NVIDIA cuVS 与 RAFT，将向量索引构建、量化压缩和向量检索全面迁移至 GPU，在 8800 万级向量数据集上实现最高 19 倍索引构建加速和超过 200 倍检索性能提升，为企业级 AI 应用提供高性能混合查询能力。
+tags: ['技术干货']
+keywords: ['MatrixOne', 'NVIDIA cuVS', 'GPU向量检索', '企业AI']
+publishTime: "2026-06-04 18:00:00+08:00"
 image:
-  "1": "/content/en/shared/tech.png"
-  "235": "/content/en/shared/tech.png"
-
-lang: en
+  '1': '/content/zh/shared/tech.png'
+  '235': '/content/zh/shared/tech.png'
+ 
+lang: zh
 status: published
----
-
-# In-Database vector index on GPU: How MatrixOne uses NVIDIA cuVS for large scale vector data
-
-MatrixOrigin has integrated advanced AI directly into our customers' core business processes. By leveraging AI-driven capabilities, organizations can automate complex workflows, boost operational efficiency far beyond traditional methods. Furthermore, the platform enables deep, actionable insights, allowing businesses to optimize their strategies that were previously unattainable.
-
-Amway China, the largest market of Amway, a global leader in health and wellness, operates a large-scale direct selling model with a distributed salesforce that relies heavily on product knowledge and customer engagement.  MatrixOrigin built an AI Assistant for Amway's sales representatives.  Sales representatives at Amway now can retrieve, review cases and  assist in recommending products and wellness solutions based on curated and approved knowledge and support sales representatives with real-time insights and recommendation suggestions during customer interactions.   
-
-JST is a global leader in digital power equipment and dry-type transformer manufacturing and is a national champion on intelligent manufacturing.  We built an AI-native data foundation that transforms massive ERP and MES records into insights and business intelligence that powers business decision making on finance, sales, investor relations and operations at JST.
-
-Both Amway and JST require their enterprise AI platform to manage structured data (often reside as tables/rows in a database) and unstructured data (documents, images, and vector index on embeddings). The MatrixOne database addresses this by integrating traditional relational capabilities with high-performance vector indexing, allowing for a unified approach to data retrieval. To provide precise context for an LLM, MatrixOne can execute hybrid queries that combine standard SQL filters on metadata and transactional records with vector similarity searches on embedded document chunks. 
-
-Initial success with an AI pilot often leads to rapid, viral adoption across an organization. However, as data volume and query concurrency scale by 100x, platforms face a significant engineering challenge: supporting tens of millions of high-dimensional vectors without sacrificing performance.
-
-To meet this demand, we have deeply integrated NVIDIA cuVS and RAFT libraries directly into the MatrixOne database engine. This architecture has been successfully deployed at Amway and JST using NVIDIA H20 GPUs, significantly accelerating vector indexing and search workload.  By leveraging GPUs rather than the traditional way of scaling by adding more servers, we can scale compute capacity more effectively while minimizing hardware overhead and power requirements.  
 
 ---
 
-## The Challenge: Giant vector index in MatrixOne Database
 
-MatrixOne supports vector datatype and IVF-Flat vector index natively, but scaling to tens of millions of vectors reveals significant computational bottlenecks when relying solely on traditional CPU execution.  These challenges manifest in two distinct phases: **index construction** and **query execution strategy**.  
+# 向量索引入核，驾驭亿级向量数据：MatrixOne × NVIDIA cuVS GPU 加速实践
 
-When building the index, the number of centroids should not be too small otherwise we need to visit too many vectors later in search. Calculating a high number of centroids via K-means clustering is computationally expensive and slow on CPUs. Once centroids are established, every one of the tens of millions of vectors must be assigned to its nearest neighbor. This process could take hours.
+矩阵起源（MatrixOrigin）专注于将先进 AI 能力深度融入企业核心业务。借助 AI 驱动的能力，企业可以自动化复杂的工作流，将运营效率提升到远超传统方式的水平，此外，沉淀于业务场景中的深度洞察，更让此前难以触达的战略决策成为可能。
 
-When querying, in real-world enterprise SQL workloads, vector searches are almost never performed in a vacuum. They are typically constrained by predicates on relational metadata. This creates a complex optimization problem for the MatrixOne query engine,
+安利（Amway）是全球健康与保健行业的领导品牌，安利中国是安利全球最大的市场，旗下庞大的销售团队高度依赖产品知识与客户互动能力。矩阵起源（MatrixOrigin）为安利销售代表量身打造了一款 AI Assistant，销售代表可快速检索案例、查阅资料，并基于经审核的知识库为客户推荐产品与健康解决方案，在客户沟通中实时获取洞察与建议，全面提升销售效率与服务质量。
 
-* **Pre-Filtering (Relational First)**: If the engine evaluates metadata predicates first, it may filter the dataset down to a small fraction. However, if the remaining set is still large, the engine must perform a "brute-force" distance calculation on every surviving vector, as the pre-filtering likely breaks the structural utility of the pre-built IVF index.
+金盘科技（JST）全球电力设备供应商，也是制造业单项冠军示范企业。矩阵起源（MatrixOrigin）为其构建了 AI 原生数据底座，将海量 ERP 与 MES 记录转化为洞察与商业智能，支撑财务、销售等业务决策。
 
-* **Post-Filtering (Vector First)**: If the engine queries the vector index first to find the top-K nearest neighbors, the subsequent relational predicates may discard many of those results. This leads to poor **recall**. To compensate for this recall drop, the engine is forced to increase the **nprobe** value to search more clusters (centroids).   This adds more demand for computing power.
+安利与金盘科技的企业级 AI 平台，都需要同时管理结构化数据（通常以数据库表/行的形式存在）与非结构化数据（文档、图像，以及基于嵌入向量的向量索引）。MatrixOne 数据库通过将传统关系型能力与高性能向量索引相结合，实现统一的数据检索方式。为了给大语言模型（LLM）提供精确上下文，MatrixOne 可执行混合查询（hybrid query）：在嵌入文档分块（chunk）上进行向量相似度搜索的同时，对元数据与事务记录施加标准 SQL 过滤条件。
+
+
+AI 试点项目一旦取得初步成功，往往会在组织内快速扩散、规模化落地。然而，当数据量与查询并发按百倍规模增长时，平台会面临重大工程挑战：如何在性能不显著下降的前提下，支撑数千万级高维向量的构建和查询。
+
+为满足这一需求，我们将 NVIDIA cuVS 与 RAFT 库深度集成到 MatrixOne 数据库引擎中。该架构已在安利与金盘科技的生产环境中部署，使用 NVIDIA H20 GPU，显著加速了向量索引构建和查询负载。通过利用 GPU，而非传统「加服务器节点」的横向扩展方式，我们可以更高效地扩展算力，同时降低硬件开销与能耗。
 
 ---
 
-## Benchmark Setting
+## 挑战：MatrixOne 数据库中的巨型向量索引
 
-Before detailing the step-by-step integration of the NVIDIA cuVS library into the database, it is essential to define the testing environment. To evaluate performance and scalability, we utilize a simplified schema designed to mirror real-world Enterprise AI workloads:
+MatrixOne 原生支持向量数据类型（Vector Datatype）与 IVF-Flat 向量索引，但在扩展到数千万向量、且仅依赖传统 CPU 执行时，会暴露出明显的计算瓶颈。这些挑战体现在两个不同阶段：**索引构建**与**查询执行策略**。
+
+### 索引构建阶段
+
+* 聚类中心（Centroid）数量不能太少，否则检索时需要访问过多向量。
+* 通过 K-Means 聚类计算大量中心点，在 CPU 上计算昂贵且缓慢。
+* 中心点确定后，数千万条向量中的每一条都必须分配到最近的中心点，这一过程可能耗时数小时。
+
+### 查询阶段
+
+在真实企业 SQL 负载中，向量检索几乎从不单独发生，通常会伴随关系型元数据上的谓词（Predicate）约束。这给 MatrixOne 查询引擎带来复杂的优化问题：
+
+* **预过滤（Pre-Filtering，先关系后向量）**：若引擎先执行元数据谓词，可能将数据集过滤到很小比例；但若剩余集合仍然很大，引擎必须对每条幸存向量做「暴力（Brute Force）」距离计算 —— 因为预过滤往往破坏了已构建 IVF 索引的结构效用。 
+
+* **后过滤（Post-Filtering，先向量后关系）**：若引擎先查向量索引得到 Top-K 近邻，后续关系谓词可能丢弃大量结果，导致召回率（recall）偏低。为弥补召回率损失，引擎被迫增大nprobe以搜索更多聚类中心点（Centroid），进一步增加算力需求。
+
+---
+
+## 基准测试环境
+
+在详细说明 NVIDIA cuVS 库如何逐步集成进数据库之前，需要先定义测试环境。为评估性能与可扩展性，我们使用简化 Schema ，模拟真实企业 AI 负载。
 
 ```sql
 CREATE TABLE documents  (file_chunk_id INT NOT NULL,
@@ -63,138 +63,138 @@ CREATE TABLE documents  (file_chunk_id INT NOT NULL,
                          embedding VECTOR(768));
 ```
 
-The file_attribute column holds relational metadata-such as department IDs, security tags, or creation timestamps-that is used to constrain hybrid queries.
+file_attribute列存放关系型元数据 —— 如部门 ID、安全标签、创建时间戳 —— 用于约束混合查询。
 
-To populate the table with high-dimensional data, we leveraged the **wiki_all dataset from NVIDIA** (88 million 768-dimension embedding vectors, totally ~251GB uncompressed). The tests were conducted on **AWS g6e instances**, powered by **NVIDIA L40S GPUs** (48GB memory), using the following scale-out strategy:
+为填充高维数据，我们使用 **NVIDIA 提供的 wiki_all 数据集**（8800 万条 768 维嵌入向量，未压缩约 251 GB）。测试在 **AWS g6e 实例**上进行，搭载 **NVIDIA L40S GPU**（48 GB 显存），扩展策略如下：
 
-* **1M to 10M Vectors**: Tested on a **g6e.16xlarge** instance utilizing a single GPU.
-* **88M Vectors (Full Dataset)**: Tested on a **g6e.48xlarge** instance leveraging 8 GPUs to handle the increased computational and memory demands of the full corpus.
-
----
-
-## Integration of NVIDIA cuVS/RAFT and the MatrixOne Database
-
-The following provides a technical breakdown of the integration process used to embed **NVIDIA cuVS** and **RAFT** capabilities directly into the MatrixOne database.
-
-### Step 1: Computing clustering (centroids) for index building.
-
-The initial phase of building an IVF-Flat index requires identifying optimal centroids. We utilized the **cuVS Balanced K-Means** algorithm, applying a sqrt(n) heuristic for centroid count. For our 88-million-record dataset, this resulted in approximately 10,000 centroids. By leveraging GPU-accelerated clustering, the time required to compute these centroids was reduced from several minutes on a CPU to just a few seconds.
-
-### Step 2: Offloading vector assignments to GPU
-
-Once the centroids are established, every embedding vector in the database must be mapped to its nearest centroid. To accelerate this, we constructed an **NVIDIA cuVS Brute-Force index** specifically for the centroids. By batching the embedding vectors and offloading the exhaustive distance computations to the GPU, we transformed a process that typically takes hours into one that completes in a few minutes.
-
-### Step 3: GPU resource management
-
-MatrixOne is primarily written in **Go**, which necessitates a bridge to **NVIDIA CUDA**-based **RAFT** library. We implemented C++ worker threads to manage long-lived GPU resources, ensuring that per-request GPU initialization costs remain near zero. To minimize the overhead of cross-language calls (Go to C++ to CUDA), requests to **cuVS** are batched whenever possible, maintaining high throughput even under heavy query loads.
-
-### Step 4: Memory optimization via Auto-Quantization
-
-Managing tens of millions of high-dimensional vectors creates significant memory pressure. We implemented automatic type quantization using the **NVIDIA cuVS quantization routines**. By performing all conversions directly on the GPU, we avoided taxing the CPU. Utilizing the **NVIDIA cuVS IVF-PQ (Product Quantization)** index allows us to dramatically reduce the memory footprint, making it feasible to host the entire index within GPU memory for extremely fast retrieval.
-
-### Step 5: Predicate pushdown for hybrid queries
-
-To answer the hybrid queries - such as "find the top 20 relevant records where file_attribute = X" - MatrixOne pushes relational predicates directly into the **cuVS** execution engine using **predicate bitsets**. Since metadata like file_attribute is relatively small, MatrixOne can maintain it in memory to generate a bitset quickly. This bitset is passed to cuVS alongside the vector search (for example, using **CAGRA** or **IVF-PQ**). **NVIDIA cuVS** then ensures that only the top-K results satisfying the metadata constraints are returned, eliminating the need for inefficient post-search pruning and significantly improving both recall and performance.
+* **100 万～1000 万向量**： 在 **g6e.16xlarge** 实例上使用单 GPU 测试
+* **8800 万向量（完整数据集）**： 在 **g6e.48xlarge** 实例上使用 8 GPU，应对完整语料库的算力与内存需求
 
 ---
 
-## Performance
+## NVIDIA cuVS / RAFT 与 MatrixOne 数据库的集成
 
-To evaluate the impact of GPU acceleration, we compared the performance of three distinct configurations: a standard **CPU-based IVF-Flat** index, a **GPU-enhanced index build** (where only the construction is offloaded), and a **fully GPU-native solution** utilizing the **NVIDIA cuVS IVF-PQ** index.
+以下是对将 NVIDIA **cuVS** 与 **RAFT** 能力嵌入 MatrixOne 数据库的技术拆解。
 
-Because vector search involves a trade-off between speed and accuracy, we carefully tuned our parameters to maintain a **0.8 recall rate**, a standard threshold demanded by our enterprise customers. We conducted query experiments using 100 concurrent client connections.
+### 步骤 1：为索引构建计算聚类（中心点）
 
-The indexing and search parameters were standardized across the experiments as follows:
+构建 IVF-Flat 索引的第一阶段是确定最优中心点。我们使用 cuVS 的 **Balanced K-Means** 算法，并采用sqrt(n)启发式确定中心点数量。对于 8800 万条记录，约产生10,000 个中心点。借助 GPU 加速聚类，中心点计算时间从 CPU 上的数分钟缩短到数秒。
 
-* **Cluster Configuration**: All indices were constructed with the number of clusters approximately equal to sqrt(num_records). Specifically, we utilized 1,000 clusters for 1M records, 3,000 for 10M, and 10,000 for the full 88M dataset.
-* **Search Parameters**: To maintain recall, we use nprobe value of 16 for standard vector searches. When metadata predicates were introduced, we increased nprobe to 32 to compensate for the narrowed search space.
-* **Quantization**: For the IVF-PQ index, pq_bits was set to 8 to balance memory efficiency with distance calculation precision.
+### 步骤 2：将向量分配卸载到 GPU
 
-Detailed documentation of our parameter tuning and the resulting performance curves can be found in the Appendix.
+中心点确定后，库中每条嵌入向量都必须映射到最近的中心点。为此，我们针对中心点构建了 NVIDIA cuVS **Brute-Force Index**索引；通过批量处理嵌入向量，将穷举距离计算卸载到 GPU，将通常耗时数小时的过程压缩到数分钟。
+
+### 步骤 3：GPU 资源管理
+
+MatrixOne 主要使用 Go 语言编写，因此需要一座桥梁连接 NVIDIA **基于 CUDA 的 RAFT 库**。我们实现 C++ 工作线程管理长生命周期 GPU 资源，使每次请求的 GPU 初始化成本接近零。为降低跨语言调用（Go → C++ → CUDA）开销，对 **cuVS** 的请求尽可能批量处理，在高并发查询下仍保持高吞吐。
+
+### 步骤 4：通过自动量化（Auto-Quantization）优化内存
+
+管理数千万高维向量会带来显著内存压力。我们使用 **NVIDIA cuVS 的量化例程**实现自动类型量化；所有转换均直接在 GPU 上完成，避免占用 CPU。采用 NVIDIA cuVS **IVF-PQ**（Inverted File Product Quantization，倒排文件乘积量化）索引后，可大幅压缩内存占，使整个索引能够驻留在 GPU 显存中，实现极快检索。
+
+### 步骤 5：混合查询的谓词下推（Predicate Pushdown）
+
+对于「查找 Top 20 相关记录，且 file_attribute = X」这类混合查询，MatrixOne 使用**谓词位图（predicate bitset）** 将关系谓词直接下推到 cuVS 执行引擎。由于 file_attribute 等元数据相对较小，MatrixOne 可将其保留在内存中并快速生成位图。该位图与向量搜索（例如使用 **CAGRA** 或 **IVF-PQ**）一并传给 cuVS；cuVS 确保只返回满足元数据约束的 Top-K 结果，避免低效的后置剪枝，显著提升召回率与性能。
 
 ---
 
-### Index Build Time 
+## 性能表现
 
-| **Dataset** | **IVF-Flat(CPU build**) | **IVF-Flat(GPU build)** | **GPU vs CPU** | **IVF-PQ(GPU buil)** | **PQ vs CPU** |
+为评估 GPU 加速效果，我们对比三种配置：标准 **CPU 版 IVF-Flat** 索引、**GPU 增强索引构建**（仅构建阶段卸载到 GPU），以及基于 NVIDIA cuVS **IVF-PQ** 的**全 GPU 原生方案**。
+
+向量搜索在速度与精度之间存在权衡，我们仔细调参以维持 **0.8 召回率** —— 企业客户的常用门槛。查询实验使用 **100 个并发客户端连接**。
+
+索引与搜索参数在各实验中统一如下：
+
+* **聚类配置**： 所有索引的聚类数约等于 sqrt(记录数)。具体为：100 万记录用 1,000 个聚类，1000 万用 3,000，8800 万完整数据集用 10,000。
+* **搜索参数**： 为维持召回率，标准向量搜索使用 nprobe = 16；引入元数据谓词时，将 nprobe 提升至 32，以补偿搜索空间收窄。
+* **量化**： IVF-PQ 索引中 pq_bits = 8，在内存效率与距离计算精度之间取得平衡。
+
+参数调优细节与性能曲线见附录。
+
+---
+
+### 索引构建时间
+
+| **数据集** | **IVF-Flat（CPU 构建**） | **IVF-Flat（GPU 构建）** | **IVF-Flat GPU vs CPU** | **IVF-PQ（GPU 构建）** | **IVF-PQ vs CPU** |
 |----------|----------|----------|----------|----------|----------|
-| 1M | 36 s | 15 s | 2.4× | 47 s | 0.8× |
-| 10M | 14 min 13 s | 2 min 12 s | 6.5× | 7 min 32 s | 1.7× |
-| **88M** | **6 h 23 min** | **20 min** | **19×** | **50 min** | **~7.7×** |
+| 100 万 | 36 s | 15 s | 2.4× | 47 s | 0.8× |
+| 1000 万 | 14 min 13 s | 2 min 12 s | 6.5× | 7 min 32 s | 1.7× |
+| 8800 万 | 6 h 23 min | 20 min | 19× | 50 min | ~7.7× |
 
-CPU-based index construction is only viable for small datasets. Once you scale to **88 million vectors**, the performance gap becomes staggering: building an index on a CPU takes hours, whereas a GPU-powered **IVF-PQ** build is roughly **7-8× faster**. Moving to a GPU-built **IVF-Flat** index increases the speedup to **19×**, effectively shrinking an overnight process into the length of a coffee break.
 
-While IVF-PQ takes longer to build than IVF-Flat, the extra overhead is intentional. This additional computation optimizes the index for significantly lower memory usage and superior search performance a trade-off in "computing cycles" that proves its value during the retrieval phase.
+基于 CPU 的索引构建仅适用于小规模数据集。扩展到 8800 万向量时，性能差距极为悬殊：CPU 构建需数小时，而 GPU 驱动的 IVF-PQ 构建约快 **7～8 倍**；GPU 构建的 IVF-Flat 加速可达 **19 倍**，将原本需要过夜的任务压缩到一杯咖啡的时间。
+
+IVF-PQ 构建虽比 IVF-Flat 更久，但这是特意设计的：额外计算使索引在更低内存占用与更优搜索性能之间取得平衡——在检索阶段，这种「计算周期」上的 trade-off 价值充分显现。
 
 ---
 
-## Search without predicates on metadata
+### 无元数据谓词的搜索
 
-| **Dataset** | **IVF-Flat(nprobe=16)** | **IVF-PQ(nprobe=16)** | **PQ vs Flat** |
+| **数据集** | **IVF-Flat（nprobe=16）** | **IVF-PQ（nprobe=16）** | **PQ vs Flat** |
 |----------|----------|----------|----------|
-| 1M | 860 QPS, recall 0.86 | 904 QPS, recall 0.82 | 1.05× |
-| 10M | 461 QPS, recall 0.82 | 1066 QPS, recall 0.80 | 2.3× |
-| **88M** | **4 QPS, recall 0.89** | **759 QPS, recall 0.83** | **~210×** |
+| 100 万 | 860 QPS，召回 0.86 | 904 QPS，召回 0.82 | 1.05× |
+| 1000 万 | 461 QPS，召回 0.82 | 1066 QPS，召回 0.80 | 2.3× |
+| 8800 万 | 4 QPS，召回 0.89 | 759 QPS，召回 0.83 | ~210× |
 
-At a small scale (1 million vectors), the dataset is manageable and the computational load is relatively light. Both **CPU and GPU architectures** handle the workload efficiently, with no significant bottlenecking on either side.
+小规模（100 万向量）时，数据集可控，CPU 与 GPU 均可高效处理。
 
-As the dataset reaches 10 million, the CPU begins to struggle under the increased load. In contrast, **GPU-based IVF-PQ**(Inverted File Product Quantization) maintains a high **QPS (Queries Per Second)**, leveraging parallel processing to sustain performance where traditional hardware falters.
+到 1000 万时，CPU 开始吃力，而 GPU 版 IVF-PQ 仍保持高 **QPS（每秒查询数）**。
 
-At the 88 million mark, the gap becomes undeniable.  The architectural advantages of **IVF-PQ** become the deciding factor in maintaining search speed. With quantization, IVF-PQ holds the whole vector index in GPU memory where the search is served directly by GPU. Without quantization, the raw vector data exceeds the cache capacity of the database. This forces the system to fetch data whenever a page misses, causing search performance to **grind to a halt**.
+到 8800 万时，差距无可争议：IVF-PQ 的架构优势成为维持搜索速度的关键——量化后整个向量索引驻留 GPU 显存，搜索完全由 GPU 服务；未量化时，原始向量数据超出数据库缓存容量，系统频繁换页，搜索性能几乎停滞。
 
----
+### 带元数据谓词的搜索
 
-### Search with metadata predicates 
-
-| **Dataset** | **IVF-Flat(nprobe=3)** | **IVF-PQ(nprobe=32)** | **PQ vs Flat** |
+| **数据集** | **IVF-Flat（nprobe=32）** | **IVF-PQ（nprobe=32）** | **PQ vs Flat** |
 |----------|----------|----------|----------|
-| 1M | 779 QPS，recall 0.82 | 649 QPS，recall 0.83 | 0.83× |
-| 10M | 230 QPS，recall 0.82 | 330 QPS，recall 0.80 | 1.43× |
-| **88M** | **2.6 QPS，recall 0.82** | **80 QPS，recall 0.84** | **~30×** |
+| 100 万 | 779 QPS，召回 0.82 | 649 QPS，召回 0.83 | 0.83× |
+| 1000 万 | 230 QPS，召回 0.82 | 330 QPS，召回 0.80 | 1.43× |
+| 8800 万 | 2.6 QPS，召回 0.82 | 80 QPS，召回 0.84 | ~30× |
 
 ---
 
-## Note On Memory footprint of IVF-PQ
+### 关于 IVF-PQ 内存占用
 
-When dealing with 88 million vectors at **768 dimensions (float32)**, you are managing approximately **270 GB of raw data**. At this scale, the difference between CPU and GPU architectures isn't just about speed-it's about where the data live and memory bandwidth.  **IVF-PQ** completely sidesteps these memory limitations through aggressive compression. By utilizing settings such as M=192 and pq_bits=8, the index is compressed to a fraction of its original size. This allows the entire searchable structure to reside within the high-bandwidth VRAM of a single modern GPU, ensuring that every probe is served at maximum velocity. Furthermore, NVIDIA cuVS can distribute the IVF-PQ index across a multi-GPU cluster; for the full 88-million-vector dataset, the memory requirement drops to just **~3.5 GB per GPU** when spread across an **8-GPU** configuration.
+8800 万条 768 维向量（float32）约 270 GB 原始数据。在此规模下，CPU 与 GPU 的差异不仅是速度，**更在于数据驻留位置与内存带宽**。IVF-PQ 通过激进压缩完全绕开这些内存限制：使用 M=192、pq_bits=8 等设置，索引被压缩到原始体积的一小部分，整个可搜索结构可驻留在单块现代 GPU 的高带宽 **VRAM** 中。此外，NVIDIA cuVS 可将 IVF-PQ 索引分布到多 GPU 集群；对完整 8800 万向量数据集，分布在 8 GPU 上时每 GPU 仅需约 **3.5 GB**。
 
-**The Bottom Line**: IVF-PQ delivers a compression ratio exceeding **10x**. By combining this quantization strategy with GPU acceleration, a single server outfitted with latest-generation GPUs-offering over 200 GB of memory each-can seamlessly manage billions of high-dimensional embeddings.
-
-
----
-
-## Conclusion: Redefining Vector Search in Database with GPU Acceleration
-
-By offloading the entire pipeline-including clustering, assignment, quantization, and search (alongside SQL predicate evaluation)-onto the GPU via **NVIDIA cuVS**, MatrixOne has unlocked the ability to manage massive vector datasets with unprecedented efficiency.
-
-## Key Performance Breakthroughs
-
-* **Accelerated Indexing**: Transitioning to GPU-based index construction yields a **20× speedup** over traditional CPU methods. Tasks that previously required several hours are now completed in well under an hour.
-* **The Power of IVF-PQ**: Using cuVS MatrixOne can build, and search vectors completely from the GPU. Quantization and compression reduced memory footprint and we expect the latest generation GPU can hold and search many billions of embedding vectors satisfying most demanding customer scenarios.
-* **Architectural Synergy**: By integrating **cvVS** vector search with **bitset pre-filtering**, MatrixOne delivers more than just a fast index. It provides a robust, production-ready database engine engineered to serve hybrid queries over structured data and embedding vectors, satisfying the intensive demands of modern AI applications.
+**结论**： IVF-PQ 压缩比超过 **10×**。结合量化策略与 GPU 加速，单台配备最新 GPU（每卡 200 GB+ 显存）的服务器，即可无缝管理数十亿级高维嵌入向量。
 
 ---
 
-## APPENDIX: Parameter Tuning
+## 结论：以 GPU 加速重新定义数据库中的向量搜索
 
-Before showing the head-to-head numbers, it's worth explaining how the parameters in those tables were picked. Two questions need answers for each index family: how do we pick nprobe, and (for IVF-PQ) how aggressive can the quantization be? We tuned on the 10M slice - large enough to be representative, cheap enough to sweep - targeting recall ≈ 0.80 @ top-20, then validated the chosen setting at 88M.
+通过 NVIDIA cuVS 将整个流水线——聚类、向量分配、量化、搜索（以及 SQL 谓词评估）——卸载到 GPU，MatrixOne 实现以前所未有的效率管理超大规模向量数据集。
 
-We ran a Pareto sweep for IVF over nprobe ∈ {1, 8, 16, 32, 64, 128, 256}:
+## 关键性能突破
 
-![nprobe](images/1.png)
+* 索引构建加速： GPU 索引构建相比传统 CPU 方法**提速约 20×**，数小时任务可在 1 小时内完成。
 
-The curve shows a classic IVF knee: recall climbs steeply until nprobe = 16 (0.79), then flattens - beyond that, each doubling of nprobe adds at most ~1 point of recall but latency starts to drift up. **nprobe = 16** is the **Pareto-optimal point** for our 0.80 recall target.
+* VF-PQ 的赋能： 借助 cuVS，MatrixOne 可在 GPU 上完成向量的构建与搜索；量化与压缩降低内存占用，最新一代 GPU 有望承载并检索数十亿嵌入向量，满足最苛刻的客户场景。
 
-We then validated at 88M:
+* 架构协同： 通过将 cuVS 向量搜索与**位图预过滤（bitset pre-filtering）** 集成，MatrixOne 提供的不仅是快速索引，更是面向结构化数据与嵌入向量混合查询、可生产部署的数据库引擎，满足现代 AI 应用的密集需求。
 
-![88M Recall vs Latency](images/2.png)
+---
 
-The 88M curve shows the same result as the 10M curve: recall hits 0.83 at nprobe = 16 (~125 ms), and only creeps to 0.88 by nprobe = 256. The 10M-tuned setting (pq_bits = 8, nprobe = 16) holds well at a larger scale.
+## 附录：参数调优
 
-Next, can more aggressive PQ compression hold that target? We swept pq_bits ∈ {8, 7, 6} at the same nprobe ladder (10M, top-20, concurrency=100, n=10000):
+在展示对比数据之前，需要先说明表中参数如何选取。对每类索引需回答两个问题：*如何选择 nprobe？以及（对 IVF-PQ）量化可以多激进？*我们在 **1000 万** 数据切片上调参——足够有代表性，又便于 sweep——目标为 **Top-20 召回率** ≈ 0.80，再在 8800 万规模上验证。
+
+我们对IVF的nprobe ∈ {1, 8, 16, 32, 64, 128, 256} 进行了帕累托扫描：
+
+![nprobe](./images/1.png)
+
+该曲线显示了经典的IVF拐点：召回率急剧上升，直到nprobe = 16（0.79），然后趋于平缓——超过这一点，nprobe每增加一倍，召回率最多增加约1个百分点，但延迟开始上升。**nprobe = 16是我们0.80召回率目标的帕累托最优点。**
+
+随后我们在8800万条数据上进行了验证：
+
+![88M Recall vs Latency](./images/2.png)
+
+8800万条数据的曲线显示了与1000万条数据曲线相同的结果：在nprobe = 16（约125毫秒延迟）时召回率达到0.83，到nprobe = 256时仅攀升至0.88。基于1000万条数据调优的设置（pq_bits = 8, nprobe = 16）在更大规模下表现良好。
+
+接下来，更激进的PQ压缩能否达到那个目标？我们在相同的nprobe梯度下（1000万条数据，top-20，并发数=100，n=10000）扫描了pq_bits ∈ {8, 7, 6}：
 
 
-| nprobe | pq_bits=8 Recall | pq_bits=7 Recall | pq_bits=6 Recall |
+| nprobe | pq_bits=8召回 | pq_bits=7召回 | pq_bits=6召回 |
 |---------|---------|---------|---------|
 | 1 | 0.39 | 0.38 | 0.37 |
 | 8 | 0.74 | 0.71 | 0.68 |
@@ -204,9 +204,10 @@ Next, can more aggressive PQ compression hold that target? We swept pq_bits ∈ 
 | 128 | 0.84 | 0.81 | 0.76 |
 | 256 | 0.84 | 0.81 | 0.76 |
 
-Only pq_bits = 8 clears 0.80 at nprobe = 16. pq_bits = 7 needs nprobe ≥ 64 to get there (4× more probes for the same recall), and pq_bits = 6 never reaches 0.80 in this sweep - its asymptotic ceiling is ~0.76. Since dropping from 8 → 7 bits saves only ~12% on stored vector bytes, we set pq_bits to 8.
+只有pq_bits = 8在nprobe = 16时达到了0.80的召回率。pq_bits = 7需要nprobe ≥ 64才能达到相同水平（为获得相同召回率需要4倍以上的探测次数），而pq_bits = 6在这次扫描中从未达到0.80——其渐近上限约为0.76。由于从8位降到7位只能节省约12%的存储向量字节数，我们将pq_bits设为8。
 
-IVF-Flat has no quantization knob - vectors are stored uncompressed in float32 - so the only tunables are cluster count (lists) and nprobe. We set lists = 10000 for the 88M index (≈ √N, the standard heuristic).  
+IVF-Flat没有量化旋钮——向量以float32格式不压缩存储——因此唯一可调的参数是聚类中心数量（列表数）和nprobe。我们为8800万条数据的索引设置了列表数 = 10000（≈ √N，标准启发式值）。
+
 
 | nprobe | Recall@20 |
 |---------|---------|
@@ -214,4 +215,4 @@ IVF-Flat has no quantization knob - vectors are stored uncompressed in float32 -
 | 16 | 0.89 |
 | 32 | 0.92 |
 
-(88M wiki_all, no filter, top-20, concurrency=100, n=10000.)
+（8800 万 wiki_all，无过滤器，Top-20，并发 100，n=10000。）
