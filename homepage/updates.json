@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "id": "series-a-funding",
+      "enabled": true,
+      "order": 10,
+      "variant": "split",
+      "startsAt": "2026-08-06",
+      "endsAt": null,
+      "content": {
+        "zh": {
+          "tag": "融资动态",
+          "date": "2026.08",
+          "title": "矩阵起源完成超千万美元 A 轮融资",
+          "desc": "本轮由汉得信息参与投资的基金、亚康股份与 Artesian Venture Partners 共同注资，加速产品研发、全球市场拓展与企业级 AI 落地。",
+          "cta": "查看融资详情"
+        },
+        "en": {
+          "tag": "Funding",
+          "date": "Aug 2026",
+          "title": "MatrixOrigin raises over US$10M in Series A funding",
+          "desc": "Backed by a HAND-led fund, AsiaCom, and Artesian Venture Partners, the round will accelerate product development, global expansion, and enterprise AI deployment.",
+          "cta": "Read the announcement"
+        }
+      },
+      "image": {
+        "desktop": "/content/homepage/images/series-a-funding.jpg",
+        "alt": {
+          "zh": "象征矩阵起源 A 轮融资与企业级 AI 基础设施增长的蓝色数据建筑",
+          "en": "Blue data architecture visualizing MatrixOrigin Series A funding and enterprise AI infrastructure growth"
+        },
+        "objectPosition": "center"
+      },
+      "destination": {
+        "kind": "blog",
+        "zh": "/blog/matrixorigin-series-a-financing",
+        "en": "/blog/matrixorigin-series-a-financing-en"
+      }
+    },
+    {
+      "id": "astra-open-source",
+      "enabled": true,
+      "order": 20,
+      "variant": "split",
+      "startsAt": "2026-09-01",
+      "endsAt": null,
+      "content": {
+        "zh": {
+          "tag": "开源动态",
+          "date": "2026.09",
+          "title": "Astra 正式开源：让企业 Agent 从上下文走向可靠执行",
+          "desc": "面向企业级 Agent 的 Context-to-Execution Runtime，提供持久化任务状态、可治理工具调用与可审计执行过程。",
+          "cta": "前往 GitHub"
+        },
+        "en": {
+          "tag": "Open Source",
+          "date": "Sep 2026",
+          "title": "Astra is now open source: from agent context to reliable execution",
+          "desc": "A context-to-execution runtime for enterprise agents, with durable task state, governed tool use, and an auditable execution history.",
+          "cta": "Explore on GitHub"
+        }
+      },
+      "image": {
+        "desktop": "/content/homepage/images/astra-open-source.jpg",
+        "alt": {
+          "zh": "Astra 企业级 Agent 运行时的透明执行舱和任务网络",
+          "en": "Transparent execution chamber and task network for the Astra enterprise agent runtime"
+        },
+        "objectPosition": "center"
+      },
+      "destination": {
+        "kind": "external",
+        "zh": "https://github.com/matrixorigin/Astra",
+        "en": "https://github.com/matrixorigin/Astra"
+      }
+    },
+    {
+      "id": "gartner-recognition",
+      "enabled": true,
+      "order": 30,
+      "variant": "split",
+      "startsAt": "2026-07-29",
+      "endsAt": null,
+      "content": {
+        "zh": {
+          "tag": "行业认可",
+          "date": "2026.07",
+          "title": "矩阵起源入选 Gartner® 数据管理领域最具创新力厂商",
+          "desc": "矩阵起源成为报告收录的四家公司中唯一一家来自中国的企业，Git for Data 与 Agent 数据基础设施方向获得行业认可。",
+          "cta": "查看完整报道"
+        },
+        "en": {
+          "tag": "Industry Recognition",
+          "date": "Jul 2026",
+          "title": "MatrixOrigin recognized in Gartner® data management research",
+          "desc": "MatrixOrigin was the only China-based company among the four vendors named, recognizing its Git for Data and agent data infrastructure direction.",
+          "cta": "Read the full story"
+        }
+      },
+      "image": {
+        "desktop": "/content/homepage/images/gartner-recognition.jpg",
+        "alt": {
+          "zh": "象征 Gartner 行业认可的水晶奖杯与数据网络",
+          "en": "Crystal recognition beacon and data network representing Gartner industry recognition"
+        },
+        "objectPosition": "center"
+      },
+      "destination": {
+        "kind": "blog",
+        "zh": "/blog/matrixorigin-gartner-coolest-vendor-innovations-data-management-2026",
+        "en": "/blog/matrixorigin-gartner-coolest-vendor-innovations-data-management-2026-en"
+      }
+    },
+    {
+      "id": "moi5-waitlist",
+      "enabled": true,
+      "order": 40,
+      "variant": "split",
+      "startsAt": "2026-09-01",
+      "endsAt": null,
+      "content": {
+        "zh": {
+          "tag": "产品发布",
+          "date": "即将发布",
+          "title": "MatrixOne Intelligence 5.0 开放首批体验名单",
+          "desc": "从原始数据到可信、能上生产的 AI Agent。加入首批体验名单，提前了解统一 Data + AI 平台的全新能力。",
+          "cta": "加入体验名单"
+        },
+        "en": {
+          "tag": "Product Launch",
+          "date": "Coming Soon",
+          "title": "Join the MatrixOne Intelligence 5.0 private beta waitlist",
+          "desc": "From raw data to trusted, production-ready AI agents. Be among the first to experience the next generation of our unified Data + AI platform.",
+          "cta": "Join the waitlist"
+        }
+      },
+      "image": {
+        "desktop": "/content/homepage/images/moi5-waitlist.jpg",
+        "alt": {
+          "zh": "MatrixOne Intelligence 5.0 将多模态数据转化为可信 Agent 能力",
+          "en": "MatrixOne Intelligence 5.0 turning multimodal data into trusted agent capabilities"
+        },
+        "objectPosition": "center"
+      },
+      "destination": {
+        "kind": "page",
+        "zh": "/try",
+        "en": "/try"
+      }
+    },
+    {
+      "id": "matrixnext-2026",
+      "enabled": true,
+      "order": 50,
+      "variant": "image",
+      "startsAt": "2026-09-01",
+      "endsAt": "2026-10-17",
+      "content": {
+        "zh": {
+          "tag": "品牌活动",
+          "date": "2026.10.17",
+          "title": "MatrixNEXT 2026：与 AI 创造者，共建未来",
+          "desc": "一场从真实问题出发的 AI Builder Festival，把想法做成能运行、能展示、能继续成长的智能体。",
+          "cta": "了解活动并报名"
+        },
+        "en": {
+          "tag": "Community Event",
+          "date": "Oct 17, 2026",
+          "title": "MatrixNEXT 2026: where AI builders build AI",
+          "desc": "An AI Builder Festival grounded in real problems: turn an idea into an agent that runs, demonstrates value, and keeps growing.",
+          "cta": "Explore the event"
+        }
+      },
+      "image": {
+        "desktop": "/content/homepage/images/matrixnext-2026-desktop.jpg",
+        "mobile": "/content/homepage/images/matrixnext-2026-mobile.jpg",
+        "alt": {
+          "zh": "MatrixNEXT 2026 AI Builder Festival 的未来构建空间",
+          "en": "Futuristic building space for the MatrixNEXT 2026 AI Builder Festival"
+        },
+        "objectPosition": "center"
+      },
+      "destination": {
+        "kind": "page",
+        "zh": "/matrixnext",
+        "en": "/matrixnext"
+      }
+    }
+  ]
+}
