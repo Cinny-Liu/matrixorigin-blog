@@ -51,14 +51,16 @@
           "date": "2026.09",
           "title": "Astra 正式开源：让企业 Agent 从上下文走向可靠执行",
           "desc": "面向企业级 Agent 的 Context-to-Execution Runtime，提供持久化任务状态、可治理工具调用与可审计执行过程。",
-          "cta": "前往 GitHub"
+          "cta": "阅读公告",
+          "secondaryCta": "GitHub"
         },
         "en": {
           "tag": "Open Source",
           "date": "Sep 2026",
           "title": "Astra is now open source: from agent context to reliable execution",
           "desc": "A context-to-execution runtime for enterprise agents, with durable task state, governed tool use, and an auditable execution history.",
-          "cta": "Explore on GitHub"
+          "cta": "Read the announcement",
+          "secondaryCta": "GitHub"
         }
       },
       "image": {
@@ -70,6 +72,11 @@
         "objectPosition": "center"
       },
       "destination": {
+        "kind": "blog",
+        "zh": "/blog/astra-open-source-zh",
+        "en": "/blog/astra-open-source"
+      },
+      "secondary": {
         "kind": "external",
         "zh": "https://github.com/matrixorigin/Astra",
         "en": "https://github.com/matrixorigin/Astra"
