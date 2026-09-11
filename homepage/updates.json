@@ -121,7 +121,7 @@
     },
     {
       "id": "moi5-waitlist",
-      "enabled": true,
+      "enabled": false,
       "order": 40,
       "variant": "split",
       "startsAt": "2026-09-01",
