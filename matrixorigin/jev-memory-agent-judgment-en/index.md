@@ -2,7 +2,7 @@
 title: "The Agent Found the Right Answer. JEV Rejected It."
 author: MatrixOrigin
 description: "This article uses an Agent Memory experiment to examine the accuracy, cost, and failure modes of a JEV judgment layer, and explores when adding a helper model to an Agent is actually worthwhile."
-tags: ["技术干货"]
+tags: ["Technical Insights"]
 keywords: ["JEV", "Agent Memory", "AI Agent", "Memory Retrieval", "LLM Evaluation"]
 date: "2026-09-20T17:00:00+08:00"
 publishTime: "2026-09-20T17:00:00+08:00"
